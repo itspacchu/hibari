@@ -40,3 +40,8 @@ type BotConfig struct {
 	DiscordConfig  `yaml:"discord"`
 	RedisConfig    `yaml:"redis"`
 }
+
+type Handler struct {
+	Name     string
+	Function interface{}
+}

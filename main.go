@@ -2,7 +2,6 @@ package main
 
 import (
 	"flag"
-	"fmt"
 	"os"
 	"os/signal"
 
@@ -13,7 +12,8 @@ import (
 
 // Flags
 var (
-	Debug bool
+	Debug       bool
+	HandlerList []handlers.Handler
 )
 
 func init() {
@@ -23,6 +23,7 @@ func init() {
 	if Debug {
 		log.SetLevel(log.DebugLevel)
 		log.Debug("Running in Debug!")
+		log.Debugf("main PPID: %d", os.Getpid())
 	}
 	dConVal, err := handlers.ReadConfigFile("config.yaml")
 	if err != nil {
@@ -30,18 +31,40 @@ func init() {
 		return
 	}
 	handlers.DiscordBotConfigValues = dConVal
+
+	HandlerList = []handlers.Handler{
+		handlers.Handler{
+			Name:     "starboard handler",
+			Function: handlers.HandleStarBoardAdd,
+		},
+		handlers.Handler{
+			Name:     "msg thread handler",
+			Function: handlers.HandleMessageInThreads,
+		},
+		handlers.Handler{
+			Name:     "starboard del",
+			Function: handlers.HandleStarBoardDel,
+		},
+	}
+
 }
 
 func main() {
 	s, _ := discordgo.New("Bot " + handlers.DiscordBotConfigValues.DiscordConfig.Auth.Token)
 	s.AddHandler(func(s *discordgo.Session, r *discordgo.Ready) {
-		fmt.Println("Bot running")
+		log.Infof("Bot running as %s", s.State.User.DisplayName())
 	})
 
 	//TODO: add []interface{}
-	s.AddHandler(handlers.HandleStarBoardAdd)
-	s.AddHandler(handlers.HandleMessageInThreads)
-	s.AddHandler(handlers.HandleStarBoardDel)
+
+	for _, handler := range HandlerList {
+		s.AddHandler(handler.Function)
+		log.Infof("Added Handler : %s", handler.Name)
+	}
+
+	// s.AddHandler(handlers.HandleStarBoardAdd)
+	// s.AddHandler(handlers.HandleMessageInThreads)
+	// s.AddHandler(handlers.HandleStarBoardDel)
 
 	done := make(chan struct{})
 	go handlers.PollingServiceToCrossPost(done, s)

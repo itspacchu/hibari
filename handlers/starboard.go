@@ -108,7 +108,7 @@ func ScheduleCrossPostDeletion(key string) {
 func PollingServiceToCrossPost(done chan struct{}, s *discordgo.Session) {
 	ticker := time.NewTicker(10 * time.Second)
 	for range ticker.C {
-		log.Debug("Polling!")
+		log.Debug("Polling Redis!")
 		RedisIter(s)
 	}
 }
