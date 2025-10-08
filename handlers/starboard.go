@@ -67,7 +67,7 @@ func SendMessageOnKey(key string, s *discordgo.Session) {
 	chanName, err := s.Channel(getMessage.ChannelID)
 	msg := ""
 	if err == nil {
-		msg = fmt.Sprintf("in #%s", chanName.Name)
+		msg = fmt.Sprintf(" in #%s", chanName.Name)
 	}
 	if err != nil {
 		log.Errorf("MessageID : %s , ChannelID : %s\nErr: %s", ChanID, MsgID, err.Error())
@@ -95,7 +95,7 @@ func SendMessageOnKey(key string, s *discordgo.Session) {
 
 func ScheduleCrossPost(key string, s *discordgo.Session) {
 	log.Debugf("Crosspost Scheduled! for key %s", key)
-	redisClient.Set(key, string(DONE_VAL), 24*time.Hour) // set big num?
+	redisClient.Set(key, string(DONE_VAL), 48*time.Hour) // set big num?
 	go SendMessageOnKey(key, s)
 }
 
